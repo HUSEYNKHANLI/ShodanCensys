@@ -1,5 +1,5 @@
 # ShodanCensys
-Of course! Below is a `README.md` format for your script, suitable for GitHub:
+
 
 ---
 
