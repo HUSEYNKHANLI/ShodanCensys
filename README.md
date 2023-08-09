@@ -35,7 +35,8 @@ git clone <repository-url>
 cd <directory-name>
 pip install -r requirements.txt
 ```
-3. Setup your environment variables or configuration file for the Censys API credentials (`CENSYS_API_ID` & `CENSYS_API_SECRET`).
+3. Setup your environment variables or configuration file for the Censys API credentials (`CENSYS_API_ID` & `CENSYS_API_SECRET`) and Shodan credentials .
+4. export SHODAN_API_KEY='your_api_key_here' ; $env:SHODAN_API_KEY='your_api_key_here' - For Windows  source ~/.zshrc linux . 
 
 ## Usage
 Execute the script and provide a target for the search:
