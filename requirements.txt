@@ -1,0 +1,9 @@
+shodan
+requests
+bs4
+argparse
+logging
+censys
+concurrent.futures
+python-decouple
+matplotlib
