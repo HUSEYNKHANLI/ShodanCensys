@@ -7,7 +7,7 @@ def is_vendor_confirmed(cve_id):
     
     if response.status_code != 200:
         print(f"Error fetching data for {cve_id}. Status code: {response.status_code}")
-        return False
+        return False, []
     
     data = response.json()
     cve_data = data.get("result", {}).get("CVE_Items", [{}])[0]
@@ -17,6 +17,8 @@ def is_vendor_confirmed(cve_id):
     # Extract vendor names from the CVE details
     vendors = [v.get("vendor_name", "").lower() for v in vendor_data]
     
+    confirmed_links = []
+    
     for ref in references:
         url = ref.get("url", "")
         domain = urlparse(url).netloc
@@ -24,20 +26,20 @@ def is_vendor_confirmed(cve_id):
         # Check if the domain or URL contains any of the vendor names
         for vendor in vendors:
             if vendor in domain or vendor.replace(" ", "") in domain:
-                return True
-            
-            # Optionally, fetch the content of the reference link and check for vendor's name
-            # Note: This can be slow and might be subject to rate limits or access restrictions
-            # content = requests.get(url).text.lower()
-            # if vendor in content:
-            #     return True
+                confirmed_links.append(url)
+                return True, confirmed_links
 
-    return False
+    return False, confirmed_links
 
 # Example usage
 if __name__ == "__main__":
     cve_id = input("Enter the CVE ID: ")  # Get CVE ID from user input
-    if is_vendor_confirmed(cve_id):
+    confirmed, links = is_vendor_confirmed(cve_id)
+    
+    if confirmed:
         print(f"Vendor has confirmed the vulnerability for {cve_id} based on reference links in the NVD database.")
+        print("Confirmed reference links:")
+        for link in links:
+            print(link)
     else:
         print(f"Vendor has not confirmed the vulnerability for {cve_id} based on reference links in the NVD database.")
