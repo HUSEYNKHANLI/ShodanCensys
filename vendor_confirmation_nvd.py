@@ -1,4 +1,5 @@
 import requests
+from urllib.parse import urlparse
 
 def is_vendor_confirmed(cve_id):
     base_url = f"https://services.nvd.nist.gov/rest/json/cve/1.0/{cve_id}"
@@ -11,15 +12,25 @@ def is_vendor_confirmed(cve_id):
     data = response.json()
     cve_data = data.get("result", {}).get("CVE_Items", [{}])[0]
     references = cve_data.get("cve", {}).get("references", {}).get("reference_data", [])
+    vendor_data = cve_data.get("cve", {}).get("affects", {}).get("vendor", {}).get("vendor_data", [{}])
     
-    # List of domains or keywords to consider as vendor or legitimate sources
-    legit_sources = ["vendor_domain.com", "legit_source.com"]  # Replace with actual domains or keywords
+    # Extract vendor names from the CVE details
+    vendors = [v.get("vendor_name", "").lower() for v in vendor_data]
     
     for ref in references:
         url = ref.get("url", "")
-        for source in legit_sources:
-            if source in url:
+        domain = urlparse(url).netloc
+        
+        # Check if the domain or URL contains any of the vendor names
+        for vendor in vendors:
+            if vendor in domain or vendor.replace(" ", "") in domain:
                 return True
+            
+            # Optionally, fetch the content of the reference link and check for vendor's name
+            # Note: This can be slow and might be subject to rate limits or access restrictions
+            # content = requests.get(url).text.lower()
+            # if vendor in content:
+            #     return True
 
     return False
 
