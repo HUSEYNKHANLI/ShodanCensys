@@ -5,7 +5,12 @@ URL = 'https://www.gartner.com/reviews/market/web-content-management'
 response = requests.get(URL)
 soup = BeautifulSoup(response.content, 'html.parser')
 
-# Find all anchor tags with the class "vendor-logo" and extract the alt attribute of the img tag within.
-product_names = [a.img['alt'] for a in soup.find_all('a', class_='vendor-logo') if a.img]
+# Trying a more general approach by just looking for img tags with alt attributes.
+product_names = [img['alt'] for img in soup.find_all('img') if img.has_attr('alt') and img['alt']]
+
+# Save the product names to a .txt file
+with open('products.txt', 'w') as file:
+    for product in product_names:
+        file.write(product + '\n')
 
 print(product_names)
