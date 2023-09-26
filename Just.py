@@ -1,24 +1,43 @@
-from selenium import webdriver
-from bs4 import BeautifulSoup
+import requests
+import re
 
-# Path to the ChromeDriver executable (adjust as necessary)
-CHROMEDRIVER_PATH = '/path/to/chromedriver'
+def scrape_trustradius_product_names(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Failed to retrieve TrustRadius webpage. Status code: {response.status_code}")
+        return []
 
-# Set up the Selenium driver
-driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH)
-driver.get('https://www.gartner.com/reviews/market/web-content-management')
+    content = response.text
+    pattern = r'{"@context":"https://schema.org","@type":"ListItem","@id":"https://www.trustradius.com/products/[^"]+/reviews","name":"([^"]+)"'
+    matches = re.findall(pattern, content)
+    return matches
 
-# Give the page some time to load dynamically-loaded content
-driver.implicitly_wait(10)
+def scrape_gartner_product_names(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Failed to retrieve Gartner webpage. Status code: {response.status_code}")
+        return []
 
-# Get the page source and parse with Beautiful Soup
-soup = BeautifulSoup(driver.page_source, 'html.parser')
-product_names = [img['alt'] for img in soup.find_all('img') if img.has_attr('alt') and img['alt']]
+    content = response.text
+    pattern = r'{"id":"[^"]+","seqId":\d+,"name":"([^"]+)","seoName":"[^"]+","vendors":\['
+    matches = re.findall(pattern, content)
+    return matches
 
-# Save the product names to a .txt file
-with open('products.txt', 'w') as file:
-    for product in product_names:
-        file.write(product + '\n')
+def main():
+    trustradius_url = "https://www.trustradius.com/cms"
+    gartner_url = "https://www.gartner.com/reviews/market/web-content-management"
 
-driver.quit()
-print(product_names)
+    # Scrape TrustRadius
+    trustradius_products = scrape_trustradius_product_names(trustradius_url)
+    print("TrustRadius Products:")
+    for name in trustradius_products:
+        print(name)
+
+    print("\nGartner Products:")
+    # Scrape Gartner
+    gartner_products = scrape_gartner_product_names(gartner_url)
+    for name in gartner_products:
+        print(name)
+
+if __name__ == "__main__":
+    main()
