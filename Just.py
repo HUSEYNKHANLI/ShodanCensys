@@ -8,7 +8,7 @@ def get_urls_from_file(keyword, filename="urls.txt"):
             key, urls = line.strip().split(": ")
             if key == keyword:
                 return urls.split(", ")
-    return None, None
+    return None, None, None
 
 def scrape_trustradius_product_names(url):
     response = requests.get(url)
@@ -32,24 +32,46 @@ def scrape_gartner_product_names(url):
     matches = re.findall(pattern, content)
     return matches
 
+def scrape_capterra_product_names(url):
+    response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Failed to retrieve Capterra webpage. Status code: {response.status_code}")
+        return []
+
+    content = response.text
+    pattern = r'{"campaignID":"[^"]+","id":"[^"]+","rating":\d+\.\d+,"slug":"([^"]+)","totalReviews":\d+}'
+    matches = re.findall(pattern, content)
+    return matches
+
 def main(keyword):
-    trustradius_url, gartner_url = get_urls_from_file(keyword)
+    trustradius_url, gartner_url, capterra_url = get_urls_from_file(keyword)
     
-    if not trustradius_url or not gartner_url:
-        print(f"No URLs found for keyword: {keyword}")
-        return
+    if not trustradius_url:
+        print(f"No TrustRadius URL found for keyword: {keyword}")
+    else:
+        # Scrape TrustRadius
+        trustradius_products = scrape_trustradius_product_names(trustradius_url)
+        print(f"TrustRadius Products for {keyword}:")
+        for name in trustradius_products:
+            print(name)
 
-    # Scrape TrustRadius
-    trustradius_products = scrape_trustradius_product_names(trustradius_url)
-    print(f"TrustRadius Products for {keyword}:")
-    for name in trustradius_products:
-        print(name)
+    if not gartner_url:
+        print(f"No Gartner URL found for keyword: {keyword}")
+    else:
+        print(f"\nGartner Products for {keyword}:")
+        # Scrape Gartner
+        gartner_products = scrape_gartner_product_names(gartner_url)
+        for name in gartner_products:
+            print(name)
 
-    print(f"\nGartner Products for {keyword}:")
-    # Scrape Gartner
-    gartner_products = scrape_gartner_product_names(gartner_url)
-    for name in gartner_products:
-        print(name)
+    if not capterra_url:
+        print(f"No Capterra URL found for keyword: {keyword}")
+    else:
+        print(f"\nCapterra Products for {keyword}:")
+        # Scrape Capterra
+        capterra_products = scrape_capterra_product_names(capterra_url)
+        for name in capterra_products:
+            print(name)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
