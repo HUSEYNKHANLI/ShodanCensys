@@ -11,7 +11,7 @@ import time
 FILENAME = "urls.txt"
 CACHE_DIR = "cache"
 NVD_API_URL = "https://services.nvd.nist.gov/rest/json/cpes/1.0"
-API_KEY = "854471d8-5490-4d05-88e1-8b85682bc259"
+API_KEY = ""
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
