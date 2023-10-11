@@ -1,9 +1,9 @@
-def scrape_trustradius_product_names(base_url, keyword):
+def scrape_trustradius_product_names(base_url):
     all_products = []
     i = 0
     while True:
-        if keyword == "firewalls":
-            url = f"{base_url}?f={i}#products"
+        if i == 0:
+            url = f"{base_url}"
         else:
             url = f"{base_url}?f={i}"
         content = make_request(url)
