@@ -1,19 +1,8 @@
-def scrape_trustradius_product_names(base_url):
-    all_products = []
-    i = 0
-    while True:
-        if i == 0:
-            url = f"{base_url}"
-        else:
-            url = f"{base_url}?f={i}"
-        content = make_request(url)
-        if content:
-            pattern = r'{"@context":"https://schema.org","@type":"ListItem","@id":"https://www.trustradius.com/products/[^"]+/reviews","name":"([^"]+)"'
-            matches = re.findall(pattern, content)
-            if not matches:  # No product names found, indicating it's the last page
-                break
-            all_products.extend(matches)
-            i += 25
-        else:
-            break
-    return all_products
+def get_urls_from_file(keyword, filename=FILENAME):
+    with open(filename, 'r') as file:
+        for line in file:
+            key, urls = line.strip().split(": ")
+            if key == keyword:
+                urls_list = urls.split(", ")
+                return urls_list[0], urls_list[1], urls_list[2], urls_list[3]
+    return None, None, None, None
