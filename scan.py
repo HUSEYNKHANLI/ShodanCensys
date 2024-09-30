@@ -3,7 +3,6 @@ import subprocess
 import requests
 from flask import Flask, request
 import logging
-from geolite2 import geolite2
 
 # Initialize Flask app for callback server
 app = Flask(__name__)
@@ -12,17 +11,13 @@ app = Flask(__name__)
 logging.basicConfig(filename="exposed_cups_servers.log", level=logging.INFO, format="%(asctime)s %(message)s")
 unique_ips = set()
 
-# Setup GeoIP database
-reader = geolite2.reader()
-
 # Endpoint to handle CUPS server callback
 @app.route('/callback', methods=['GET', 'POST'])
 def handle_callback():
     ip_address = request.remote_addr
     if ip_address not in unique_ips:
         unique_ips.add(ip_address)
-        location = reader.get(ip_address)
-        logging.info(f"Exposed CUPS server from IP: {ip_address}, Location: {location}")
+        logging.info(f"Exposed CUPS server from IP: {ip_address}")
     return "Received", 200
 
 # Function to read IP addresses from a CSV file
