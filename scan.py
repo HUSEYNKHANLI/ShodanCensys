@@ -1,6 +1,8 @@
+import csv
 import socket
 import struct
 
+# Function to craft the IPP Get-Printer-Attributes request
 def craft_ipp_get_printer_attributes_request():
     # IPP request format:
     # - Version (2 bytes)
@@ -38,6 +40,7 @@ def craft_ipp_get_printer_attributes_request():
     
     return ipp_request
 
+# Function to send a UDP probe to a given IP
 def send_ipp_udp_probe(ip):
     try:
         # Create a UDP socket
@@ -63,6 +66,18 @@ def send_ipp_udp_probe(ip):
     except Exception as e:
         print(f"Error while probing {ip} on UDP: {e}")
 
-# Example usage
-ip = "192.168.1.10"  # Replace with target IP
-send_ipp_udp_probe(ip)
+# Function to read IP addresses from a CSV file and probe each one
+def read_ips_from_csv_and_probe(file_path):
+    with open(file_path, 'r') as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            ip = row['ip']  # Assuming the CSV has a column named 'ip'
+            send_ipp_udp_probe(ip)
+
+# Main function
+if __name__ == "__main__":
+    # Path to your CSV file containing the IP addresses
+    csv_file_path = "ips.csv"  # Replace with the actual path to your CSV file
+    
+    # Read IPs from the CSV and send probes
+    read_ips_from_csv_and_probe(csv_file_path)
