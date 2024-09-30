@@ -42,13 +42,21 @@ def scan_ips(ips):
             if "631/udp open" in scan_output:
                 print(f"Port 631 is open on {ip}. Sending a probe...")
                 # Send a probe to see if CUPS server responds
-                response = requests.get(f"http://{ip}:631", timeout=5)
-                if response.status_code == 200:
-                    print(f"Received valid response from {ip}")
+                try:
+                    response = requests.get(f"http://{ip}:631", timeout=5)
+                    # Print the HTTP status code and content of the response
+                    print(f"Response Status Code from {ip}: {response.status_code}")
+                    print(f"Response Content from {ip}: {response.text}")
+                    
+                    # If the status code is 200, it indicates a valid response
+                    if response.status_code == 200:
+                        print(f"Received valid response from {ip}")
+                except requests.exceptions.Timeout:
+                    print(f"Request to {ip} timed out.")
+                except requests.exceptions.RequestException as e:
+                    print(f"Error sending probe to {ip}: {e}")
         except subprocess.CalledProcessError as e:
             print(f"Error scanning {ip}: {e}")
-        except requests.exceptions.RequestException as e:
-            print(f"No response from {ip}: {e}")
 
 # Main function
 if __name__ == "__main__":
