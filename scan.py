@@ -1,6 +1,6 @@
 import csv
 import subprocess
-import requests
+import socket
 from flask import Flask, request
 import logging
 
@@ -29,6 +29,32 @@ def read_ips_from_csv(file_path):
             ips.append(row['ip'])
     return ips
 
+# Function to send a UDP probe to port 631
+def send_udp_probe(ip):
+    try:
+        # Create a UDP socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(5)  # Set a timeout for the socket (5 seconds)
+
+        # Construct a simple UDP packet (could be empty or have basic content)
+        udp_probe_message = b'\x01'  # Simple byte message
+        server_address = (ip, 631)  # Send to UDP port 631
+
+        # Send the UDP packet
+        print(f"Sending UDP probe to {ip} on port 631...")
+        sock.sendto(udp_probe_message, server_address)
+
+        # Try to receive a response (if any)
+        try:
+            data, _ = sock.recvfrom(4096)  # Buffer size is 4096 bytes
+            print(f"Received response from {ip}: {data}")
+        except socket.timeout:
+            print(f"No response from {ip} on UDP port 631.")
+        finally:
+            sock.close()
+    except Exception as e:
+        print(f"Error while probing {ip} on UDP: {e}")
+
 # Function to scan IPs using Nmap (as Zmap is for large-scale scans)
 def scan_ips(ips):
     for ip in ips:
@@ -37,24 +63,12 @@ def scan_ips(ips):
             # Nmap command to scan UDP port 631 on a specific IP
             nmap_command = ["sudo", "nmap", "-sU", "-p", "631", ip]
             scan_output = subprocess.check_output(nmap_command).decode('utf-8')
-            
+
             # Check if port 631 is open
             if "631/udp open" in scan_output:
-                print(f"Port 631 is open on {ip}. Sending a probe...")
-                # Send a probe to see if CUPS server responds
-                try:
-                    response = requests.get(f"http://{ip}:631", timeout=5)
-                    # Print the HTTP status code and content of the response
-                    print(f"Response Status Code from {ip}: {response.status_code}")
-                    print(f"Response Content from {ip}: {response.text}")
-                    
-                    # If the status code is 200, it indicates a valid response
-                    if response.status_code == 200:
-                        print(f"Received valid response from {ip}")
-                except requests.exceptions.Timeout:
-                    print(f"Request to {ip} timed out.")
-                except requests.exceptions.RequestException as e:
-                    print(f"Error sending probe to {ip}: {e}")
+                print(f"Port 631 is open on {ip}. Sending a UDP probe...")
+                # Send a UDP probe to the open port
+                send_udp_probe(ip)
         except subprocess.CalledProcessError as e:
             print(f"Error scanning {ip}: {e}")
 
